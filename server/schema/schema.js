@@ -5,13 +5,25 @@ const _ = require('lodash');
 
 // Destructure to get specific functions from 'graphql'
 // GraphQLString is a type String for schema. This declaration is specific to GraphQL
-const {GraphQLObjectType, GraphQLString, GraphQLSchema} = graphql;
+const {
+    GraphQLObjectType, 
+    GraphQLString, 
+    GraphQLSchema,
+    GraphQLID,
+    GraphQLInt
+} = graphql;
 
 // todo: Dummmy data. To be removed later
 const bookList = [
     {id: '1', name: 'The Alchemist', genre: 'Fantasy'},
     {id: '2', name: 'Harry Potter', genre: 'Thriller'},
     {id: '3', name: 'The Alchemist', genre: 'Fiction'}
+];
+
+const authorList = [
+    {id: '1', name: 'JK Rowling', age: '50'},
+    {id: '2', name: 'Jodi Picoult', age: '35'},
+    {id: '3', name: 'Paul Coelho', age: '44'}
 ];
 
 // Schema has Book and Author
@@ -21,9 +33,20 @@ const BookType = new GraphQLObjectType({
     name: 'Book',
     // ii) Declare field names using function. Perhaps, these are the fields that we are exposing?
     fields: () => ({
-        id: {type: GraphQLString},
+        //GraphQLID doesn't affect the object's type; it's just for GraphQL query to be flexible enough to be either 'string' or id (integer)
+        id: {type: GraphQLID},
         name: {type: GraphQLString},
         genre: {type: GraphQLString}
+    })
+});
+
+// Create schema for Author
+const AuthorType = new GraphQLObjectType({
+    name: 'Author',
+    fields: () => ({
+        id: {type: GraphQLID},
+        name: {type: GraphQLString},
+        age: {type: GraphQLInt}
     })
 });
 
@@ -40,7 +63,7 @@ const RootQuery = new GraphQLObjectType({
             // argument to be passed in GraphQL query
             args: {
                 id: {
-                    type: GraphQLString
+                    type: GraphQLID
                 }
             },
             // resolve function being used to find the data
@@ -50,7 +73,19 @@ const RootQuery = new GraphQLObjectType({
                 //finding book from bookList collection, spinned and coode
                 return _.find(bookList, {id: args.id});
             }
+        },
+        author: {
+            type: AuthorType,
+            args: {
+                id: {
+                    type: GraphQLID
+                }
+            },
+            resolve(parent, args) {
+                return _.find(authorList, {id: args.id});
+            }
         }
+
     }
 });
 
